@@ -1,6 +1,6 @@
 ﻿
 #include <Novice.h>
-
+#include<stdbool.h>
 #include <math.h>
 #include <process.h>
 #include <mmsystem.h>
@@ -32,7 +32,7 @@ Vector2 center = { 100,100 };
 char keys[256] = { 0 };
 char preKeys[256] = { 0 };
 int color = RED;
-int slimeTexutre = Novice::LoadTexture("./NT1_Slime.png");
+bool flag = false;
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -49,11 +49,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	a.center.x = 400;
 	a.center.y = 400;
-	a.radius = 100;
+	a.radius = 16;
 
 	b.center.x = 200;
 	b.center.y = 200;
-	b.radius = 50;
+	b.radius = 16;
 
 	// winsock初期化
 	WSAStartup(MAKEWORD(2, 0), &wdData);
@@ -61,6 +61,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// データを送受信処理をスレッド（WinMainの流れに関係なく動作する処理の流れ）として生成。
 	// データ送受信をスレッドにしないと何かデータを受信するまでRECV関数で止まってしまう。
 	hThread = (HANDLE)CreateThread(NULL, 0, &Threadfunc, (LPVOID)&a, 0, &dwID);
+
+int slimeTexutre = Novice::LoadTexture("./NT1_Slime.png");
+int redSlimeTexutre = Novice::LoadTexture("./NT1_RedSlime.png");
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -94,8 +97,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (distance <= a.radius+b.radius) {
 			color = BLUE;
+			flag = true;
+
 		}
-		else color = RED;
+		else {
+			color = RED;
+			flag = false;
+		}
 		///
 		/// ↑更新処理ここまで
 		///
@@ -103,8 +111,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
-		Novice::DrawEllipse((int)a.center.x, (int)a.center.y, (int)a.radius, (int)a.radius, 0.0f, WHITE, kFillModeSolid);
-		Novice::DrawEllipse((int)b.center.x, (int)b.center.y, (int)b.radius, (int)b.radius,0.0f, color, kFillModeSolid);
+		Novice::DrawEllipse((int)a.center.x, (int)a.center.y, (int)a.radius, (int)a.radius, 0.0f, WHITE, kFillModeWireFrame);
+		Novice::DrawSprite((int)a.center.x-32/2, (int)a.center.y-32/2, slimeTexutre,1.0f, 1.0f, 0.0f, WHITE);
+		Novice::DrawEllipse((int)b.center.x, (int)b.center.y, (int)b.radius, (int)b.radius,0.0f, color, kFillModeWireFrame);
+		Novice::DrawSprite((int)b.center.x-32/2, (int)b.center.y-32/2,redSlimeTexutre, 1.0f,1.0f,0.0f, WHITE);
 		///
 		/// ↑描画処理ここまで
 		///
@@ -215,6 +225,7 @@ DWORD WINAPI Threadfunc(void* ) {
 	closesocket(sConnect);
 
 	return 0;
+
 }
 
 #if 0
